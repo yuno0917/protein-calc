@@ -141,11 +141,24 @@
       const b = scoops(r.gapHigh);
       text = lead + '足りない分は約' + r.gapLow.gap + '〜' + r.gapHigh.gap + 'g。プロテインなら約' + (a === b ? a : a + '〜' + b) + '杯分です。';
     }
-    scoopBox.replaceChildren(
+    scoopBox.replaceChildren(...[
       h('p', null, h('strong', { text: 'プロテイン何杯分？' })),
       h('p', null, text, cite(6)),
       h('p', { class: 'hint', text: 'プロテイン1杯（1食分）でタンパク質20gとして計算しています。食事の量は人によって違うので、下の「食べ物でとるなら」の表で、ふだん食べているものと比べてみてください。' }),
-      r.gapHigh.gap > 0 ? h('p', null, h('a', { href: '#buy', text: 'プロテインを探す' })) : null
+      r.gapHigh.gap > 0 ? quickPicks() : null
+    ].filter(Boolean));
+  }
+
+  // 足りない分があるときだけ、下の「プロテインで足すなら」の先頭2つ（マイプロテインとザバス）を結果のすぐ下にも出す
+  function quickPicks() {
+    const lists = document.querySelectorAll('#buy .pr-links');
+    if (lists.length < 2) return h('p', null, h('a', { href: '#buy', text: 'プロテインを探す' }));
+    const pick = (list, cls) => h('ul', { class: cls }, h('li', null, list.querySelector('li a').cloneNode(true)));
+    return h('div', { class: 'quick-picks' },
+      h('p', null, h('span', { class: 'pr-label', text: 'PR' }), 'プロテインで足すなら'),
+      pick(lists[0], 'pr-links'),
+      pick(lists[1], 'pr-links pr-items'),
+      h('p', { class: 'hint' }, h('a', { href: '#buy', text: 'ほかのプロテインも見る' }))
     );
   }
 

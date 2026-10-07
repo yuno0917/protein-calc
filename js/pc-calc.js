@@ -32,6 +32,20 @@
     ]
   };
 
+  // コスパ計算に使う商品。1食の量とタンパク質はメーカー公式の栄養成分表示（2026年10月7日に確認）。
+  // 味によってタンパク質が違う商品は、味を書いておく。size はよくある内容量（値段は入れてもらう）
+  DATA.products = [
+    { id: 'savas-whey', name: 'ザバス ホエイプロテイン100', flavor: 'リッチショコラ味', serving: 28, protein: 19.5, size: 800, shop: 'rakuten', query: 'ザバス ホエイプロテイン100', source: 'https://www.meiji.co.jp/products/sports/4902777302102.html' },
+    { id: 'savas-soy', name: 'ザバス ソイプロテイン100', flavor: 'ココア味', serving: 28, protein: 20.0, size: 900, shop: 'rakuten', query: 'ザバス ソイプロテイン100', source: 'https://www.meiji.co.jp/products/sports/4902777308388.html' },
+    { id: 'mp-impact-choc', name: 'マイプロテイン Impact ホエイ', flavor: 'ナチュラルチョコレート味', serving: 30, protein: 21, size: 900, shop: 'myprotein', source: 'https://www.myprotein.jp/p/sports-nutrition/impact-whey-protein-powder/10530943/?variation=17712292' },
+    { id: 'mp-impact-plain', name: 'マイプロテイン Impact ホエイ', flavor: 'ノンフレーバー', serving: 30, protein: 23, size: 1000, shop: 'myprotein', source: 'https://www.myprotein.jp/p/sports-nutrition/impact-whey-protein-powder/10530943/?variation=10531012' },
+    { id: 'belegend', name: 'ビーレジェンド WPC', flavor: '激うまチョコ風味', serving: 30, protein: 20.9, size: 900, shop: 'rakuten', query: 'ビーレジェンド ホエイ', source: 'https://store.belegend.jp/item/BLWP02AP1.html' },
+    { id: 'grong', name: 'GronG ホエイプロテイン100 スタンダード', flavor: 'ココア風味', serving: 29, protein: 21.9, size: 1000, shop: 'rakuten', query: 'GronG ホエイプロテイン100', source: 'https://shop.grong.jp/products/whey-protein-standard' },
+    { id: 'on-gold', name: 'ゴールドスタンダード 100% ホエイ', flavor: 'ダブルリッチチョコレート', serving: 31, protein: 24, size: 898, shop: 'rakuten', query: 'ゴールドスタンダード ホエイ', source: 'https://www.optimumnutrition.com/ja-jp/products/gold-standard-100-whey-protein-powder' },
+    { id: 'dns', name: 'DNS プロテインホエイ100', flavor: 'プレミアムチョコレート風味', serving: 35, protein: 24.2, size: 1000, shop: 'rakuten', query: 'DNS プロテインホエイ100', source: 'https://shop.dnszone.jp/shop/g/gD23001110105/' },
+    { id: 'xplosion', name: 'エクスプロージョン WPC', flavor: 'ミルクチョコレート味', serving: 30, protein: 21.0, size: 3000, shop: 'rakuten', query: 'エクスプロージョン WPC', source: 'https://store.x-plosion.jp/view/page/ingredients' }
+  ];
+
   const r1 = x => Math.round(x * 10) / 10;
   const half = x => Math.round(x * 2) / 2;
 
@@ -93,5 +107,47 @@
     return errors;
   }
 
-  Object.assign(PC, { DATA, foodList, gapFor, calc, normalizeInput, validate });
+  // ---- コスパ計算 ----
+  // 値段（円）・内容量（g）・1食の量（g）・1食のタンパク質（g）から、
+  // 1袋のタンパク質の合計、タンパク質20gあたりの値段、20gを1杯とした杯数を出す
+  function cost(n) {
+    const proteinTotal = n.size / n.serving * n.protein;
+    const yenPerGram = n.price / proteinTotal;
+    return {
+      proteinTotal: Math.round(proteinTotal),
+      yenPerGram,
+      per20: Math.round(yenPerGram * DATA.scoop),
+      cups: Math.round(proteinTotal / DATA.scoop)
+    };
+  }
+
+  // 1日 grams g をこのプロテインでとるときの、30日分の値段（10円単位）
+  function monthly(yenPerGram, grams) {
+    return Math.round(yenPerGram * grams * 30 / 10) * 10;
+  }
+
+  function normalizeCost(input) {
+    const i = input || {};
+    const num = v => (v === '' || v == null ? NaN : Number(v));
+    const p = DATA.products.find(x => x.id === i.product) || null;
+    return {
+      product: p ? p.id : 'custom',
+      name: p ? p.name + '（' + p.flavor + '）' : 'そのほかの商品',
+      price: num(i.price),
+      size: num(i.size),
+      serving: p ? p.serving : num(i.serving),
+      protein: p ? p.protein : num(i.protein)
+    };
+  }
+
+  function validateCost(n) {
+    const errors = [];
+    if (!(n.price >= 1 && n.price <= 100000)) errors.push('値段を1〜100,000円の範囲で入れてください。');
+    if (!(n.size >= 10 && n.size <= 10000)) errors.push('内容量を10〜10,000gの範囲で入れてください。');
+    if (!(n.serving >= 1 && n.serving <= 200)) errors.push('1食の量を1〜200gの範囲で入れてください。');
+    if (!(n.protein > 0 && n.protein <= n.serving)) errors.push('1食のタンパク質を、1食の量より少なく入れてください。');
+    return errors;
+  }
+
+  Object.assign(PC, { DATA, foodList, gapFor, calc, normalizeInput, validate, cost, monthly, normalizeCost, validateCost });
 })(typeof window !== 'undefined' ? window : globalThis);

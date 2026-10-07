@@ -87,6 +87,34 @@
     eq(PC.foodList().map(f => f.per100), [23.3, 23.9, 22.3, 16.0, 12.2, 7.0, 16.5, 3.3, 3.6, 8.9, 2.5]);
   });
 
+  test('コスパ計算の商品データ：1食のタンパク質は1食の量より少なく、楽天の商品には検索語、全部に公式の出典がある', () => {
+    eq(D.products.length, 9);
+    D.products.forEach(p => {
+      if (!(p.protein > 0 && p.protein < p.serving && p.size > 0)) throw new Error(p.id + ' の数字');
+      if (p.shop === 'rakuten' && !p.query) throw new Error(p.id + ' の検索語');
+      if (!/^https:\/\//.test(p.source)) throw new Error(p.id + ' の出典');
+    });
+    eq(new Set(D.products.map(p => p.id)).size, D.products.length);
+  });
+  test('ザバス ホエイ100（28gで19.5g）800g・4,980円 → 20gあたり約179円、約28杯分', () => {
+    const n = PC.normalizeCost({ product: 'savas-whey', price: '4980', size: '800' });
+    eq([n.serving, n.protein], [28, 19.5]);
+    const c = PC.cost(n);
+    eq([c.proteinTotal, c.per20, c.cups], [557, 179, 28]);   // 800 ÷ 28 × 19.5 = 557.1g
+    eq(PC.monthly(c.yenPerGram, 41), 10990);                  // 4980 ÷ 557.1 × 41 × 30 = 10,994円
+  });
+  test('そのほかの商品は、入れた1食の量とタンパク質で計算する', () => {
+    const n = PC.normalizeCost({ product: 'custom', price: '3000', size: '1000', serving: '25', protein: '20' });
+    eq([n.product, n.serving, n.protein], ['custom', 25, 20]);
+    eq(PC.cost(n).per20, 75);   // 1000 ÷ 25 × 20 = 800g → 3000 ÷ 800 × 20
+  });
+  test('コスパ計算の入力チェック', () => {
+    eq(PC.validateCost(PC.normalizeCost({ product: 'dns', price: '5000', size: '1000' })), []);
+    eq(PC.validateCost(PC.normalizeCost({ product: 'dns', price: '', size: '1000' })).length, 1);
+    eq(PC.validateCost(PC.normalizeCost({ product: 'custom', price: '5000', size: '1000', serving: '30', protein: '40' })).length, 1);
+    eq(PC.validateCost(PC.normalizeCost({ product: 'custom', price: '0', size: '5', serving: '', protein: '' })).length, 4);
+  });
+
   const failed = results.filter(r => !r.ok);
   const summary = document.getElementById('summary');
   summary.textContent = failed.length ? failed.length + ' 件失敗 / ' + results.length + ' 件' : 'ALL PASS ' + results.length;

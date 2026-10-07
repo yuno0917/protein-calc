@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>タンパク質 1日の必要量計算｜体重から何g？プロテイン何杯分？</title>
-<meta name="description" content="体重と目的を入れるだけで、1日にとりたいタンパク質の量（g）と、1食あたりの量、プロテイン何杯分かを計算します。筋トレ・減量中・健康のための3つに対応。研究と厚生労働省の食事摂取基準にもとづく根拠つき。無料・登録不要。">
+<meta name="description" content="体重と目的を入れるだけで、1日にとりたいタンパク質の量（g）と、1食あたりの量、プロテイン何杯分かを計算します。プロテインのコスパ（タンパク質20gあたりの値段・1か月の値段）も計算できます。筋トレ・減量中・健康のための3つに対応。研究と厚生労働省の食事摂取基準にもとづく根拠つき。無料・登録不要。">
 <link rel="canonical" href="https://yuno-lab.com/protein-calc/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="1日のタンパク質計算機">
@@ -126,6 +126,63 @@
       </table>
     </div>
     <p class="hint">日本食品標準成分表（八訂）増補2023年の値から計算しました。目安の量は、よくある大きさです。プロテインは商品によって違います（ザバス ホエイプロテイン100は1食分28gで20.0g）。<a class="cite-chip" href="#ref-7">7</a><a class="cite-chip" href="#ref-8">8</a></p>
+  </section>
+
+  <section class="card" id="cost" aria-labelledby="cost-title">
+    <h2 id="cost-title">プロテインのコスパを計算する</h2>
+    <p>商品と、今の値段・内容量を入れると、タンパク質20g（だいたい1杯分）あたりの値段を計算します。上で体重と目的を入れていれば、足りない分をそのプロテインで足したときの1か月の値段も出します。ザバス、マイプロテイン、ビーレジェンド、GronG、ゴールドスタンダード、DNS、エクスプロージョンの栄養成分を入れてあります。</p>
+    <form id="cost-form" novalidate>
+      <p class="error" id="cost-error" role="alert" hidden></p>
+      <div class="field-grid">
+        <label class="field">
+          <span class="field-name">商品</span>
+          <select name="product" id="cost-product" class="select-wide"></select>
+        </label>
+        <label class="field">
+          <span class="field-name">値段</span>
+          <span class="num"><input type="number" name="price" inputmode="numeric" min="1" max="100000" step="1" placeholder="4980"><span class="unit">円</span></span>
+        </label>
+        <label class="field">
+          <span class="field-name">内容量</span>
+          <span class="num"><input type="number" name="size" inputmode="numeric" min="10" max="10000" step="1" placeholder="800"><span class="unit">g</span></span>
+        </label>
+      </div>
+      <div class="field-grid" id="custom-fields" hidden>
+        <label class="field">
+          <span class="field-name">1食の量</span>
+          <span class="num"><input type="number" name="serving" inputmode="decimal" min="1" max="200" step="0.1" placeholder="30"><span class="unit">g</span></span>
+        </label>
+        <label class="field">
+          <span class="field-name">1食のタンパク質</span>
+          <span class="num"><input type="number" name="protein" inputmode="decimal" min="0.1" max="200" step="0.1" placeholder="21"><span class="unit">g</span></span>
+        </label>
+      </div>
+      <p class="hint" id="product-note"></p>
+      <button type="submit" class="primary">コスパを計算する</button>
+    </form>
+    <div class="sub-result" id="cost-result" hidden>
+      <p class="big-range" id="cost-big"></p>
+      <p id="cost-month"></p>
+      <div class="table-wrap" id="compare-wrap" hidden>
+        <table class="data-table">
+          <caption>計算した商品（タンパク質20gあたりが安い順）</caption>
+          <thead><tr><th scope="col">商品</th><th scope="col">値段・内容量</th><th scope="col">20gあたり</th></tr></thead>
+          <tbody id="compare-body"></tbody>
+        </table>
+      </div>
+      <p class="hint">商品を変えて計算すると、この表に並びます。値段は送料やポイントを入れずに計算しています。<button type="button" class="link-btn" id="compare-clear">表を消す</button></p>
+    </div>
+    <details class="more">
+      <summary>入れてある商品の栄養成分を見る</summary>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>メーカー公式の栄養成分表示（2026年10月7日に確認）</caption>
+          <thead><tr><th scope="col">商品</th><th scope="col">1食</th><th scope="col">タンパク質</th></tr></thead>
+          <tbody id="product-table"></tbody>
+        </table>
+      </div>
+      <p class="hint">同じ商品でも、味によってタンパク質の量が少し違います。内容量は変わることがあるので、買う商品の表示を確かめてください。</p>
+    </details>
   </section>
 
   <section class="pr-box" id="buy" aria-labelledby="buy-title">

@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>タンパク質 1日の必要量計算｜体重から何g？プロテイン何杯分？</title>
+<meta name="description" content="体重と目的を入れるだけで、1日にとりたいタンパク質の量（g）と、1食あたりの量、プロテイン何杯分かを計算します。筋トレ・減量中・健康のための3つに対応。研究と厚生労働省の食事摂取基準にもとづく根拠つき。無料・登録不要。">
+<link rel="canonical" href="https://yuno-lab.com/protein-calc/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="1日のタンパク質計算機">
+<meta property="og:description" content="体重と目的から、1日にとりたいタンパク質の量と、プロテイン何杯分かを計算します。研究と食事摂取基準にもとづく根拠つき。">
+<meta property="og:url" content="https://yuno-lab.com/protein-calc/">
+<meta property="og:image" content="https://yuno-lab.com/protein-calc/og.png">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#d9480f">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "1日のタンパク質計算機",
+  "url": "https://yuno-lab.com/protein-calc/",
+  "description": "体重と目的から、1日にとりたいタンパク質の量、1食あたりの量、プロテイン何杯分かを計算するWebツール。",
+  "applicationCategory": "HealthApplication",
+  "operatingSystem": "All",
+  "inLanguage": "ja",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "JPY" }
+}
+</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7280043806672538"
+     crossorigin="anonymous"></script>
+</head>
+<body>
+
+<nav class="topnav" aria-label="サイト内">
+  <div class="wrap">
+    <a class="brand" href="index.html"><img src="favicon.svg" alt="" width="26" height="26">1日のタンパク質計算機</a>
+    <ul>
+      <li><a class="navlink" href="index.html" aria-current="page">計算する</a></li>
+      <li><a class="navlink" href="#foods">食べ物の量</a></li>
+      <li><a class="navlink" href="/">yuno-lab</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="site-header">
+  <div class="wrap">
+    <h1>1日のタンパク質計算機</h1>
+    <p class="lead">体重と目的から、1日にとりたいタンパク質の量と、プロテイン何杯分かを計算します。</p>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="card" id="form-section" aria-labelledby="form-title">
+    <h2 id="form-title">あなたの体重と目的</h2>
+    <form id="calc-form" novalidate>
+      <p class="error" id="form-error" role="alert" hidden></p>
+
+      <div class="field-grid">
+        <label class="field">
+          <span class="field-name">体重</span>
+          <span class="num"><input type="number" name="bw" inputmode="decimal" min="30" max="200" step="0.1" placeholder="65" required><span class="unit">kg</span></span>
+        </label>
+
+        <label class="field" id="bf-field" hidden>
+          <span class="field-name">体脂肪率<small>わかれば</small></span>
+          <span class="num"><input type="number" name="bf" inputmode="decimal" min="3" max="60" step="0.1" placeholder="20"><span class="unit">%</span></span>
+        </label>
+      </div>
+
+      <fieldset class="form-field">
+        <legend>目的</legend>
+        <div class="seg">
+          <label><input type="radio" name="goal" value="muscle" checked><span>筋肉をつけたい<small>筋トレをしている</small></span></label>
+          <label><input type="radio" name="goal" value="cut"><span>減量中<small>筋肉は落としたくない</small></span></label>
+          <label><input type="radio" name="goal" value="health"><span>健康のため<small>筋トレはしていない</small></span></label>
+        </div>
+      </fieldset>
+
+      <button type="submit" class="primary">計算する</button>
+    </form>
+  </section>
+
+  <section id="result" aria-labelledby="result-title" hidden>
+    <div class="card">
+      <h2 id="result-title">1日にとりたいタンパク質</h2>
+      <p class="summary-meta" id="summary-meta"></p>
+      <p class="big-range" id="big-range"></p>
+      <p class="hint" id="basis-note"></p>
+      <p id="meal-line"></p>
+      <div class="callout" id="scoop-box"></div>
+      <div class="actions">
+        <button type="button" class="secondary" id="share-btn">リンクをコピー</button>
+      </div>
+      <div class="share-box" id="share-box" hidden>
+        <input type="text" id="share-url" readonly aria-label="共有リンク">
+        <p class="share-status" id="share-status" role="status"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="foods" aria-labelledby="foods-title">
+    <h2 id="foods-title">食べ物でとるなら</h2>
+    <p>よく食べるもののタンパク質の量です。肉や魚は、100gでおよそ20gとれます。</p>
+    <div class="table-wrap">
+      <table class="data-table" id="food-table">
+        <thead><tr><th scope="col">食べ物</th><th scope="col">目安の量</th><th scope="col">タンパク質</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">鶏むね肉（皮なし）</th><td>100g</td><td class="cell-num">23.3g</td></tr>
+          <tr><th scope="row">鶏ささみ</th><td>1本（50g）</td><td class="cell-num">12.0g</td></tr>
+          <tr><th scope="row">鮭（しろさけ）</th><td>1切れ（80g）</td><td class="cell-num">17.8g</td></tr>
+          <tr><th scope="row">ツナ缶（水煮）</th><td>1缶（70g）</td><td class="cell-num">11.2g</td></tr>
+          <tr><th scope="row">卵</th><td>1個（50g）</td><td class="cell-num">6.1g</td></tr>
+          <tr><th scope="row">木綿豆腐</th><td>半丁（150g）</td><td class="cell-num">10.5g</td></tr>
+          <tr><th scope="row">納豆</th><td>1パック（45g）</td><td class="cell-num">7.4g</td></tr>
+          <tr><th scope="row">牛乳</th><td>コップ1杯（200g）</td><td class="cell-num">6.6g</td></tr>
+          <tr><th scope="row">ヨーグルト（無糖）</th><td>100g</td><td class="cell-num">3.6g</td></tr>
+          <tr><th scope="row">食パン</th><td>6枚切り1枚（60g）</td><td class="cell-num">5.3g</td></tr>
+          <tr><th scope="row">ごはん</th><td>茶碗1杯（150g）</td><td class="cell-num">3.8g</td></tr>
+          <tr><th scope="row">プロテイン</th><td>1杯（1食分）</td><td class="cell-num">約20g</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="hint">日本食品標準成分表（八訂）増補2023年の値から計算しました。目安の量は、よくある大きさです。プロテインは商品によって違います（ザバス ホエイプロテイン100は1食分28gで20.0g）。<a class="cite-chip" href="#ref-7">7</a><a class="cite-chip" href="#ref-8">8</a></p>
+  </section>
+
+  <section class="card article" aria-labelledby="about-title">
+    <h2 id="about-title">この計算機の考え方</h2>
+    <h3>筋肉をつけたい：体重1kgあたり1.6〜2.2g</h3>
+    <p>筋トレをしている人にプロテインを足した49の研究（1,863人）をまとめた分析では、筋肉の増え方は1日に体重1kgあたり約1.6gでほぼ頭打ちになりました。ただし、この値には幅があり（1.0〜2.2g）、効果を取りこぼしたくない人には約2.2gがすすめられています<a class="cite-chip" href="#ref-1">1</a>。国際スポーツ栄養学会も、運動する人の多くは1.4〜2.0gで足りるとしています<a class="cite-chip" href="#ref-2">2</a>。</p>
+    <h3>減量中：除脂肪体重1kgあたり2.3〜3.1g</h3>
+    <p>食事を減らしている間は、筋肉が落ちやすくなります。筋トレをしている体脂肪の少ない人の研究をまとめた論文では、除脂肪体重（体重から脂肪を除いた重さ）1kgあたり2.3〜3.1gがよいとしています。減らし方が大きいほど、また体脂肪が少ないほど、多めにとります<a class="cite-chip" href="#ref-4">4</a>。体脂肪率がわからないときは、筋肉をつけたいときと同じ体重1kgあたり1.6〜2.2gで計算します。</p>
+    <h3>健康のため：体重1kgあたり約0.9g</h3>
+    <p>厚生労働省の食事摂取基準（2025年版）では、1日の推奨量は18〜64歳の男性で65g、女性で50gです。これは、体重1kgあたり約0.73gの必要量に1.25をかけた量で、体重1kgあたり約0.9gにあたります。65歳以上は、これより多め（体重1kgあたり1.2g以上）にとると、フレイルやサルコペニア（筋肉が減って弱ること）の予防につながる可能性があるとしています<a class="cite-chip" href="#ref-5">5</a>。</p>
+    <h3>1食あたりの量</h3>
+    <p>国際スポーツ栄養学会は、1回に20〜40gを、3〜4時間ごとに分けてとることをすすめています<a class="cite-chip" href="#ref-2">2</a>。筋肉をつけたい人は、1食に体重1kgあたり0.4gを、1日4回以上とると、1日1.6gに届きます<a class="cite-chip" href="#ref-3">3</a>。</p>
+    <h3>プロテイン何杯分か</h3>
+    <p>20歳以上の日本人は、食事から1日に平均71.5g（男性78.0g、女性65.9g）のタンパク質をとっています<a class="cite-chip" href="#ref-6">6</a>。ふだんの食事がこれくらいとして、目標に足りない分を、1杯20gのプロテインで何杯分かに直しています。</p>
+
+    <h2>よくある質問</h2>
+    <div class="faq">
+      <details><summary>とりすぎると体に悪いですか？</summary><p>健康な人が体重1kgあたり2.5〜3.3gを最長1年とった研究でも、血液の脂質や、腎臓・肝臓の検査値に悪い影響は見られませんでした<a class="cite-chip" href="#ref-2">2</a>。食事摂取基準でも、上限（耐容上限量）は決められていません。ただし、1.6gを超えてとっても筋肉の増え方は変わらない可能性が高く、たくさんとるほど健康によいわけではない、とも書かれています<a class="cite-chip" href="#ref-5">5</a>。腎臓の病気がある人や、腎臓の働きが低いと言われた人は、医師や管理栄養士の指示に従ってください。</p></details>
+      <details><summary>プロテインを飲まないとだめですか？</summary><p>食事でとれていれば、飲む必要はありません。プロテインは、食事だけでは足りないときに手軽に足せる食品です。上の「食べ物でとるなら」の表を見て、肉・魚・卵・大豆・乳製品を毎食とり入れてみてください。</p></details>
+      <details><summary>1回にたくさんとると、むだになりますか？</summary><p>1日の合計がいちばん大切です。そのうえで、1回にまとめるより、20〜40gずつ3〜4回に分けるほうがよいとされています<a class="cite-chip" href="#ref-2">2</a><a class="cite-chip" href="#ref-3">3</a>。</p></details>
+      <details><summary>体脂肪率は、どの体重計の値でもいいですか？</summary><p>家庭用の体組成計の値で大丈夫です。ただ、測る時間や体の水分で値が変わるので、目安として使ってください。減量中の研究は、体脂肪の少ない人（男性23%以下、女性35%以下）が対象でした<a class="cite-chip" href="#ref-4">4</a>。</p></details>
+      <details><summary>65歳以上ですが、どれを選べばいいですか？</summary><p>筋トレをしているなら「筋肉をつけたい」、していないなら「健康のため」を選んでください。「健康のため」の結果には、65歳以上の目安（体重1kgあたり1.2g以上）も出します<a class="cite-chip" href="#ref-5">5</a>。</p></details>
+    </div>
+
+    <h2>筋トレのメニューもつくる</h2>
+    <ul class="link-list">
+      <li><a href="/body-menu/">ボディメイク メニューメーカー</a>：全身の見た目を変える筋トレの8週間メニューを、研究にもとづいて作ります。</li>
+      <li><a href="/big3-menu/">BIG3 メニューメーカー</a>：スクワット・ベンチプレス・デッドリフトの8週間メニューを作ります。</li>
+      <li><a href="/rm-calc/">RM換算・MAX計算機</a>：挙げた重さと回数から、MAXと、何kgなら何回できるかを出します。</li>
+    </ul>
+
+    <h2 id="refs">参考文献</h2>
+    <ol class="ref-list">
+      <li id="ref-1">Morton, R. W., Murphy, K. T., McKellar, S. R., et al. (2018). A systematic review, meta-analysis and meta-regression of the effect of protein supplementation on resistance training-induced gains in muscle mass and strength in healthy adults. <i>British Journal of Sports Medicine, 52</i>(6), 376–384. <a href="https://doi.org/10.1136/bjsports-2017-097608">doi:10.1136/bjsports-2017-097608</a></li>
+      <li id="ref-2">Jäger, R., Kerksick, C. M., Campbell, B. I., et al. (2017). International Society of Sports Nutrition position stand: Protein and exercise. <i>Journal of the International Society of Sports Nutrition, 14</i>, 20. <a href="https://doi.org/10.1186/s12970-017-0177-8">doi:10.1186/s12970-017-0177-8</a></li>
+      <li id="ref-3">Schoenfeld, B. J., &amp; Aragon, A. A. (2018). How much protein can the body use in a single meal for muscle-building? Implications for daily protein distribution. <i>Journal of the International Society of Sports Nutrition, 15</i>, 10. <a href="https://doi.org/10.1186/s12970-018-0215-1">doi:10.1186/s12970-018-0215-1</a></li>
+      <li id="ref-4">Helms, E. R., Zinn, C., Rowlands, D. S., &amp; Brown, S. R. (2014). A systematic review of dietary protein during caloric restriction in resistance trained lean athletes: A case for higher intakes. <i>International Journal of Sport Nutrition and Exercise Metabolism, 24</i>(2), 127–138. <a href="https://doi.org/10.1123/ijsnem.2013-0054">doi:10.1123/ijsnem.2013-0054</a></li>
+      <li id="ref-5">厚生労働省（2024）. 日本人の食事摂取基準（2025年版）. <a href="https://www.mhlw.go.jp/stf/newpage_44138.html">厚生労働省のページ</a></li>
+      <li id="ref-6">厚生労働省. 令和6年国民健康・栄養調査報告. <a href="https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/kenkou/eiyou/r6-houkoku_00001.html">厚生労働省のページ</a></li>
+      <li id="ref-7">文部科学省. 日本食品標準成分表（八訂）増補2023年. <a href="https://www.mext.go.jp/a_menu/syokuhinseibun/mext_00001.html">文部科学省のページ</a></li>
+      <li id="ref-8">明治. ザバス ホエイプロテイン100 ストロベリー風味 商品情報. <a href="https://www.meiji.co.jp/products/sports/4902777330792.html">明治のページ</a></li>
+    </ol>
+
+    <h2 id="disclaimer">免責事項</h2>
+    <div class="disclaimer">
+      <p>この計算機の結果は、研究と公的な基準にもとづく一般的な目安です。病気の治療や食事制限の指示に代わるものではありません。腎臓の病気がある人、腎臓の働きが低いと言われた人、そのほか持病がある人や妊娠中の人は、医師や管理栄養士に相談してください。</p>
+      <p>このツールの利用によって生じた損害について、運営者は責任を負いません。</p>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <a href="/">yuno-lab トップ</a>
+    <span aria-hidden="true">・</span>
+    <a href="/body-menu/">ボディメイク メニューメーカー</a>
+    <span aria-hidden="true">・</span>
+    <a href="/about.html">このサイトについて</a>
+    <span aria-hidden="true">・</span>
+    <a href="/privacy.html">プライバシーポリシー</a>
+    <span aria-hidden="true">・</span>
+    <a href="#disclaimer">免責事項</a>
+  </div>
+</footer>
+
+<script src="js/pc-calc.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

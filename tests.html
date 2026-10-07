@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>1日のタンパク質計算機 ロジックのテスト</title>
+<style>
+  body { font-family: system-ui, "Yu Gothic UI", Meiryo, sans-serif; margin: 16px; line-height: 1.6; background: #fff; color: #1a1d21; }
+  #summary { font-size: 1.25rem; font-weight: 700; }
+  .pass { color: #2b8a3e; }
+  .fail { color: #c92a2a; font-weight: 700; }
+</style>
+</head>
+<body>
+<h1>ロジックのテスト</h1>
+<p id="summary">実行中…</p>
+<ul id="results"></ul>
+
+<script src="js/pc-calc.js"></script>
+<script>
+(function () {
+  'use strict';
+  const PC = window.PC;
+  const D = PC.DATA;
+  const results = [];
+  function test(name, fn) {
+    try { fn(); results.push({ name, ok: true }); }
+    catch (e) { results.push({ name, ok: false, msg: e && e.message ? e.message : String(e) }); }
+  }
+  function eq(a, b, label) {
+    const x = JSON.stringify(a), y = JSON.stringify(b);
+    if (x !== y) throw new Error((label ? label + ': ' : '') + '期待値 ' + y + ' / 実際 ' + x);
+  }
+  const run = input => PC.calc(PC.normalizeInput(input));
+
+  test('研究と基準の数字：1.6〜2.2g/kg、減量中は除脂肪体重1kgあたり2.3〜3.1g、健康は0.9g/kg（65歳以上1.2g/kg）', () => {
+    eq([D.goals.muscle.low, D.goals.muscle.high], [1.6, 2.2]);
+    eq([D.goals.cut.ffmLow, D.goals.cut.ffmHigh], [2.3, 3.1]);
+    eq([D.goals.health.perKg, D.goals.health.seniorPerKg], [0.9, 1.2]);
+    eq([D.avgIntake.all, D.avgIntake.male, D.avgIntake.female, D.scoop], [71.5, 78.0, 65.9, 20]);
+  });
+  test('筋肉をつけたい・体重70kg → 112〜154g、1食28〜39g×4回', () => {
+    const r = run({ bw: '70', goal: 'muscle' });
+    eq([r.low, r.high, r.basis], [112, 154, 'bw']);
+    eq([r.perMealLow, r.perMealHigh, r.meals], [28, 39, 4]);
+  });
+  test('足りない分とプロテインの杯数（平均71.5g、1杯20g、0.5杯刻み）', () => {
+    const r = run({ bw: '70', goal: 'muscle' });
+    eq(r.gapLow, { gap: 41, scoops: 2 });    // 112 − 71.5 = 40.5
+    eq(r.gapHigh, { gap: 83, scoops: 4 });   // 154 − 71.5 = 82.5
+    eq(PC.gapFor(60), { gap: 0, scoops: 0 });
+    eq(PC.gapFor(76), { gap: 0, scoops: 0 });   // 差が5g未満は食事でとれる量
+    eq(PC.gapFor(77), { gap: 6, scoops: 0.5 });
+    eq(PC.gapFor(101.5), { gap: 30, scoops: 1.5 });
+  });
+  test('減量中・体重70kg・体脂肪率20% → 除脂肪体重56kg、129〜174g', () => {
+    const r = run({ bw: '70', goal: 'cut', bf: '20' });
+    eq([r.basis, r.ffm, r.low, r.high], ['ffm', 56, 129, 174]);
+    eq([r.perKgLow, r.perKgHigh], [1.8, 2.5]);
+  });
+  test('減量中で体脂肪率がないときは、体重1kgあたり1.6〜2.2g', () => {
+    const r = run({ bw: '70', goal: 'cut', bf: '' });
+    eq([r.basis, r.ffm, r.low, r.high], ['bw', null, 112, 154]);
+  });
+  test('健康のため・体重60kg → 約54g、65歳以上は72g以上、平均的な食事で足りる', () => {
+    const r = run({ bw: '60', goal: 'health' });
+    eq([r.basis, r.low, r.high, r.senior], ['dri', 54, 54, 72]);
+    eq([r.perMealLow, r.meals], [18, 3]);
+    eq([r.gapLow.gap, r.gapHigh.gap], [0, 0]);
+  });
+  test('入力の整理：目的が不明なら筋肉、体脂肪率は減量中だけ使う', () => {
+    eq(PC.normalizeInput({ bw: '70', goal: 'xxx' }).goal, 'muscle');
+    eq(PC.normalizeInput({ bw: '70', goal: 'muscle', bf: '20' }).bf, null);
+    eq(PC.normalizeInput({ bw: '70', goal: 'cut', bf: '20' }).bf, 20);
+    eq(PC.normalizeInput({ bw: '70', goal: 'cut', bf: '' }).bf, null);
+  });
+  test('入力のチェック', () => {
+    eq(PC.validate(PC.normalizeInput({ bw: '70', goal: 'muscle' })), []);
+    eq(PC.validate(PC.normalizeInput({ bw: '', goal: 'muscle' })).length, 1);
+    eq(PC.validate(PC.normalizeInput({ bw: '250', goal: 'muscle' })).length, 1);
+    eq(PC.validate(PC.normalizeInput({ bw: '70', goal: 'cut', bf: '80' })).length, 1);
+    eq(PC.validate(PC.normalizeInput({ bw: '70', goal: 'cut', bf: '2' })).length, 1);
+  });
+  test('食べ物のタンパク質（成分表の値 × 目安の量）がページの表と同じ', () => {
+    eq(PC.foodList().map(f => f.protein), [23.3, 12, 17.8, 11.2, 6.1, 10.5, 7.4, 6.6, 3.6, 5.3, 3.8]);
+    eq(PC.foodList().map(f => f.per100), [23.3, 23.9, 22.3, 16.0, 12.2, 7.0, 16.5, 3.3, 3.6, 8.9, 2.5]);
+  });
+
+  const failed = results.filter(r => !r.ok);
+  const summary = document.getElementById('summary');
+  summary.textContent = failed.length ? failed.length + ' 件失敗 / ' + results.length + ' 件' : 'ALL PASS ' + results.length;
+  summary.className = failed.length ? 'fail' : 'pass';
+  const list = document.getElementById('results');
+  results.forEach(r => {
+    const li = document.createElement('li');
+    li.className = r.ok ? 'pass' : 'fail';
+    li.textContent = (r.ok ? '✓ ' : '✗ ') + r.name + (r.ok ? '' : ' — ' + r.msg);
+    list.appendChild(li);
+  });
+})();
+</script>
+</body>
+</html>
